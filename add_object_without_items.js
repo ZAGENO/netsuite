@@ -35,5 +35,7 @@ function POST(datain) {
   return nlobj;
 }
 
-//curl -X POST -d '{"recordtype":"inventoryitem", "displayname": "Keybaord Test Test", "itemid": "My mechanical keyboard"}' -H "Authorization: NLAuth nlauth_account=TSTDRV2136536_RP, nlauth_email=sankar@zageno.com, nlauth_signature=9D7iSj6Gr5" -H "Content-Type: application/json" "https://tstdrv2136536-rp.restlets.api.netsuite.com/app/site/hosting/restlet.nl?script=547&deploy=2" | python -m json.tool
+//curl -X POST -d
+// '{"recordtype":"inventoryitem", "displayname": "Keybaord Test Test", "itemid": "My mechanical keyboard"}'
+// -H "Authorization: NLAuth nlauth_account=TSTDRV2136536_RP, nlauth_email=sankar@zageno.com, nlauth_signature=9D7iSj6Gr5" -H "Content-Type: application/json" "https://tstdrv2136536-rp.restlets.api.netsuite.com/app/site/hosting/restlet.nl?script=547&deploy=2" | python -m json.tool
 
