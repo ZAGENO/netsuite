@@ -39,7 +39,6 @@ function addItem(record, item) {
   record.commitLineItem('item');
 }
 
-
 function POST(data) {
   var record = nlapiCreateRecord(purchaseorder);
   var item;
