@@ -22,7 +22,7 @@ function update_all(count, record, data) {
   {
     if (data.hasOwnProperty(fieldname))
     {
-      if (fieldname != 'recordtype' && fieldname != 'id')
+      if (fieldname != 'itemid')
       {
         var value = data[fieldname];
         if (value && typeof value != 'object') // ignore other type of parameters
@@ -34,19 +34,25 @@ function update_all(count, record, data) {
   }
 }
 
+function get_itemid(vendor_bill, line_number) {
+  var _itemid = vendor_bill.getLineItemValue('item', 'item', line_number);
+  var item = nlapiLoadRecord('inventoryitem', _itemid);
+  return item.getFieldValue('itemid');
+}
+
 function POST(data) {
   //data = JSON.parse(data);
   var po = nlapiLoadRecord(dataType, data.id);
   var vb_record = nlapiTransformRecord(dataType, data.id, targetDataType);
   for (var j = vb_record.getLineItemCount('item'); j>=1; j--)
   {
-    for(var i=data.items.length; i>=1; i-- ) {
-        if(vb_record.getLineItemValue('itemid')===data.items[i].itemid) {
-          update_all(j, vb_record, data.item[i]);
+    for(var i=0; i<data.items.length; i++) {
+        if(get_itemid(vb_record, j)==data.items[i].itemid) {
+          update_all(j, vb_record, data.items[i]);
         }
     }
   }
   var vb = nlapiSubmitRecord(vb_record);
-  vb.comm
+  // vb.comm
   return vb;
 }
