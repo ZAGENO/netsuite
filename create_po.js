@@ -1,8 +1,12 @@
 const inventoryitem = 'inventoryitem';
 const purchaseorder = 'purchaseorder';
 
-function create_inventory_item(item) {
-  var record = nlapiCreateRecord(inventoryitem);
+function GET(datain) {
+    datain = JSON.parse(datain);
+    return JSON.stringify(nlapiLoadRecord(datain.recordtype, datain.id));
+}
+
+function update_inventory_item(record, item) {
   for (var fieldname in item)
   {
     if (item.hasOwnProperty(fieldname))
@@ -21,40 +25,45 @@ function create_inventory_item(item) {
 
 function get_item(item) {
   var filters = new Array();
+  var itemRecord;
   filters[0] = new nlobjSearchFilter('itemid', null, 'contains', item.itemid, null);
   var searchresults = nlapiSearchRecord(inventoryitem, null, filters, null);
 
-  if (searchresults !== null && searchresults.length===1) {
-    return nlapiLoadRecord(inventoryitem, searchresults[0].getId());
+  if (searchresults !== null && searchresults.length==1) {
+    itemRecord = nlapiLoadRecord(inventoryitem, searchresults[0].getId());
   }
   else {
-    return create_inventory_item(item);
+    itemRecord = nlapiCreateRecord(inventoryitem);
   }
+  return update_inventory_item(itemRecord, item);
 }
 
 function addItem(record, item) {
-  item = get_item(item);
+  var lineItem = get_item(item);
   record.selectNewLineItem('item');
-  record.setCurrentLineItemValue('item','item', item.getId());
+  record.setCurrentLineItemValue('item','item', lineItem.getId());
+  //record.setCurrentLineItemValue('item', 'price', item.price);
+  //record.setCurrentLineItemValue('item','isbillable','T');
   record.commitLineItem('item');
 }
 
-function POST(data) {
+
+function POST(datain) {
   var record = nlapiCreateRecord(purchaseorder);
   var item;
-  for (var index in data.items) {
-    item = data.items[index];
+  for (var index in datain.items) {
+    item = datain.items[index];
     addItem(record, item);
   }
 
-  for (var fieldname in data)
+  for (var fieldname in datain)
   {
-    if (data.hasOwnProperty(fieldname))
+    if (datain.hasOwnProperty(fieldname))
       {
         if (fieldname != 'recordtype' && fieldname != 'id' && fieldname != 'items')
         {
-          var value = data[fieldname];
-          if (value && typeof value != 'object') // ignore other type of parameters
+          var value = datain[fieldname];
+          if (value && typeof value != 'object')
             {
               record.setFieldValue(fieldname, value);
             }
@@ -64,7 +73,7 @@ function POST(data) {
   var recordId = nlapiSubmitRecord(record);
   nlapiLogExecution('DEBUG','id='+recordId);
 
-  return nlapiLoadRecord(purchaseorder, recordId);
+  return nlapiLoadRecord(purchaseorder,recordId);
 }
 
 function DELETE(data) {
