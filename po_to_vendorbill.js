@@ -5,18 +5,6 @@ function GET(data) {
    return nlapiLoadRecord(dataType, data.id);
 }
 
-function POST_OLD(data) {
-  data = JSON.parse(data);
-  var po = nlapiLoadRecord(dataType, data.id);
-  var vb_record = nlapiTransformRecord(dataType, data.id, targetDataType);
-  var vb = nlapiSubmitRecord(vb_record);
-  for (var j = record.getLineItemCount('item'); j>=1; j--)
-  {
-    record.setLineItemVlaue('item','amount', j, '31.13');
-  }
-  return JSON.stringify(vb);
-}
-
 function update_all(count, record, data) {
   for (var fieldname in data)
   {
@@ -40,19 +28,30 @@ function get_itemid(vendor_bill, line_number) {
   return item.getFieldValue('itemid');
 }
 
-function POST(data) {
-  //data = JSON.parse(data);
-  var po = nlapiLoadRecord(dataType, data.id);
-  var vb_record = nlapiTransformRecord(dataType, data.id, targetDataType);
+function create_vb(data) {
+  var vb_record = nlapiTransformRecord(dataType, data.po_id, targetDataType);
   for (var j = vb_record.getLineItemCount('item'); j>=1; j--)
   {
+    var remove=true;
     for(var i=0; i<data.items.length; i++) {
-        if(get_itemid(vb_record, j)==data.items[i].itemid) {
-          update_all(j, vb_record, data.items[i]);
-        }
+      if(get_itemid(vb_record, j)==data.items[i].itemid) {
+        remove=false;
+        update_all(j, vb_record, data.items[i]);
+      }
+    }
+    if (remove) {
+      vb_record.removeLineItem('item', j);
     }
   }
   var vb = nlapiSubmitRecord(vb_record);
-  // vb.comm
-  return vb;
+  return nlapiLoadRecord(targetDataType, vb);
+}
+
+function POST(data) {
+  return create_vb(data);
+}
+
+function PUT(data) {
+  nlapiDeleteRecord(targetDataType, data.vb_id);
+  return create_vb(data);
 }
